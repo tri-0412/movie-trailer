@@ -1,42 +1,53 @@
 import { createContext, useState } from "react";
-import PropType from "prop-type";
 import Modal from "react-modal";
 import YouTube from "react-youtube";
+import PropTypes from "prop-types";
 
-const MovieContext = createContext();
+// Tạo MovieContext
+export const MovieContext = createContext();
+
+// Tùy chọn cho YouTube player
 const opts = {
   height: "390",
   width: "640",
   playerVars: {
-    // https://developers.google.com/youtube/player_parameters
-    autoplay: 1,
+    autoplay: 1, // Bắt đầu tự động phát video
   },
 };
 
-const MovieProvider = ({ children }) => {
+// eslint-disable-next-line react/prop-types
+export const MovieProvider = ({ children }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [trailerKey, setTrailerKey] = useState("");
+
   const handleTrailer = async (id) => {
-    setTrailerKey("");
+    setTrailerKey(""); // Reset trailer key trước khi gọi API
     try {
       const url = `https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`;
       const options = {
         method: "GET",
         headers: {
           accept: "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
+          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`, // Lấy API key từ biến môi trường
         },
       };
-      const movieKey = await fetch(url, options);
-      const data = await movieKey.json();
+      const response = await fetch(url, options);
+      const data = await response.json();
       console.log(data);
-      setTrailerKey(data.results[0].key);
-      setModalIsOpen(true);
+
+      // Nếu có trailer, cập nhật trailer key và mở modal
+      if (data.results && data.results.length > 0) {
+        setTrailerKey(data.results[0].key);
+        setModalIsOpen(true);
+      } else {
+        console.log("No trailers found.");
+      }
     } catch (error) {
       setModalIsOpen(false);
-      console.log(error);
+      console.log("Error fetching trailer:", error);
     }
   };
+
   return (
     <MovieContext.Provider value={{ handleTrailer }}>
       {children}
@@ -57,16 +68,18 @@ const MovieProvider = ({ children }) => {
             transform: "translate(-50%, -50%)",
           },
         }}
-        contentLabel="Example Modal"
+        contentLabel="Movie Trailer Modal"
       >
-        <YouTube videoId={trailerKey} opts={opts} />
+        {trailerKey ? (
+          <YouTube videoId={trailerKey} opts={opts} />
+        ) : (
+          <p>Loading trailer...</p>
+        )}
       </Modal>
     </MovieContext.Provider>
   );
-
-  // eslint-disable-next-line no-unreachable
-  MovieProvider.propTypes = {
-    children: PropType.node,
-  };
 };
-export default { MovieProvider, MovieContext };
+
+MovieProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
