@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import "./App.css";
 import Banner from "./Components/Banner";
@@ -6,7 +5,7 @@ import Header from "./Components/Header";
 import MovieList from "./Components/MovieList";
 import "./index.css";
 import MovieSearch from "./Components/MovieSearch";
-import MovieProvider from "./Context/MovieProvider";
+import { MovieProvider } from "././Context/MovieProvider";
 
 function App() {
   const [movie, setMovie] = useState([]);
