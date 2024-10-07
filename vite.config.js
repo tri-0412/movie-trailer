@@ -9,4 +9,5 @@ export default defineConfig({
       external: ["prop-types"],
     },
   },
+  base: "./",
 });
